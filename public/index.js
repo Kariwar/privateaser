@@ -145,7 +145,91 @@ const actors = [{
     'amount': 0
   }]
 }];
+function calculteprice()
+{
+  for(var j=0;j<events.length;j++)
+  {
+    for(var i=0;i<bars.length;i++)
+    {
+    if(events[j].barId==bars[i].id)
+    {
+        if(events[i].persons>60)
+          events[j].price=events[j].time*bars[i].pricePerHour+(events[j].persons*bars[i].pricePerPerson)*0.5;
+        else
+        {
+          if(events[j].persons>20)
+            events[j].price=events[j].time*bars[i].pricePerHour+(events[j].persons*bars[i].pricePerHour)*0.7;
+          else
+          {
+            if(events[j].persons>10)
+              events[j].price=events[j].time*bars[i].pricePerHour+(events[j].persons*bars[i].pricePerHour)*0.9;
+            else
+              events[j].price=events[j].time*bars[i].pricePerHour+(events[j].persons*bars[i].pricePerHour);
+          }
+        } 
+      }
+    }
+  }
+}
+function calculatecomission()
+{
+  for(var i=0;i<events.length;i++)
+  {
+  events[i].commission=0.3*(events[i].price);
+  events[i].insurance=0.5*(events[i].commission);
+  events[i].treasury=events[i].persons;
+  events[i].privateaser=events[i].price-(events[i].commission+events[i].treasury);
+  }
+}
+function calculatedeductible()
+{
+  for(var i=0;i<events.length;i++)
+    {
+      (if events[i].deductibleReduction==true)
+        {
+          events[i].privateaser+=events[i].persons;
+        }
+    }
+}
 
+function payActors(actors,events)
+{
+
+  var eventsi;
+
+  for(var i=0;i<actors.length;i++)
+  {
+    eventsi=events.find(event => event.id === actors[i]["eventId"] );
+
+    if(actors[i]["payment"][0]["who"]=='booker')
+    {
+      actors[i]["payment"][0]["amount"]=eventsi["price"];
+    }
+
+    else if(actors[i]["payment"][0]["who"]=='bar')
+    {
+      actors[i]["payment"][0]["amount"]=eventsi["price"]-eventsi["insurance"]-eventsi["treasury"]-eventsi["privateaser"];
+    }
+
+    else if(actors[i]["payment"][0]["who"]=='insurance')
+    {
+      actors[i]["payment"][0]["amount"]=eventsi["insurance"];
+    }
+
+    else if(actors[i]["payment"][0]["who"]=='treasury')
+    {
+      actors[i]["payment"][0]["amount"]=eventsi["treasury"];
+    }
+    else if(actors[i]["payment"][0]["who"]=='privateaser')
+    {
+     actors[i]["payment"][0]["amount"]=eventsi["privateaser"];
+    }
+
+  }
+}
+calculteprice();
+calculatecomission();
+payActors();
 console.log(bars);
 console.log(events);
 console.log(actors);
